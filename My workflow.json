@@ -1,0 +1,5193 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        54656,
+        16544
+      ],
+      "id": "abd463bb-decc-48b4-a158-ceaa4bef4afd",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "1odMoMyIgDzP1w8i",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-approved",
+              "leftValue": "={{ $json.valider }}",
+              "rightValue": "approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        54848,
+        16544
+      ],
+      "id": "b43f4389-0fbc-433e-b7c5-adf365cfc5df",
+      "name": "If Approved"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allRows = $input.all();\nconst results = [];\nconst staticData = $getWorkflowStaticData('global');\n\nfor (const item of allRows) {\n  const rowData = item.json;\n\n  // Skip row if already processed (has status or ticket_id)\n  if (rowData.status && rowData.status.trim() !== '') {\n    continue;\n  }\n  if (rowData.ticket_id && rowData.ticket_id.trim() !== '') {\n    continue;\n  }\n\n  // Generate unique ticket_id using timestamp + random string\n  const timestamp = Date.now();\n  const random = Math.random().toString(36).substring(2, 8);\n  const ticket_id = `TKT_${timestamp}_${random}`;\n\n  // Track which product is currently presented to admins for vote\n  staticData.lastPresentedTicketId = ticket_id;\n\n  results.push({\n    json: {\n      ...rowData,\n      ticket_id: ticket_id,\n      status: 'EN_ATTENTE',\n      phone_number: rowData.phone_number || '',\n      client_name: rowData.Name || rowData.client_name || 'Unknown'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55040,
+        16544
+      ],
+      "id": "63a949cc-018f-456c-8d51-e24dd3e8be16",
+      "name": "Generate Ticket ID"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "ticket_id": "={{ $json.ticket_id }}",
+            "status": "EN_ATTENTE",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Photo produit",
+              "displayName": "Photo produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de creation",
+              "displayName": "Date de creation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valider",
+              "displayName": "valider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number Adest total",
+              "displayName": "Number Adest total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number de personne",
+              "displayName": "Number de personne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de debut",
+              "displayName": "Date de debut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date dernier adset",
+              "displayName": "Date dernier adset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prix de ventes",
+              "displayName": "prix de ventes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pays",
+              "displayName": "Pays",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note Produit",
+              "displayName": "Note Produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priorite",
+              "displayName": "Priorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien De Page",
+              "displayName": "Lien De Page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien de site",
+              "displayName": "Lien de site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo",
+              "displayName": "photo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voice_over_approved",
+              "displayName": "voice_over_approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": " voice over link ",
+              "displayName": " voice over link ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving",
+              "displayName": "montage approving",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving link",
+              "displayName": "montage approving link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55264,
+        16544
+      ],
+      "id": "a9778e27-be58-40f6-94e8-097795385600",
+      "name": "Set Initial Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=📋 Nouveau Ticket: {{ $('Generate Ticket ID').item.json.ticket_id }}\n\n📦 معلومات المنتج:\n- اسم المنتج: {{ $('Generate Ticket ID').item.json.Name }}\n- الرابط: {{ $('Generate Ticket ID').item.json[\"Lien de site\"] }}\n- الصفحة: {{ $('Generate Ticket ID').item.json[\"Lien De Page\"] }}\n- السعر: {{ $('Generate Ticket ID').item.json[\"prix de ventes\"] }}\n- الدولة: {{ $('Generate Ticket ID').item.json.Pays }}\n\n📊 Google Sheet:\nhttps://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit\n\nConfirmer?\n✅ OUI / OK\n❌ NON / ANNULER",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        55488,
+        16544
+      ],
+      "id": "7695a69c-1fa1-4ae3-bb2d-2e1714ffd9f9",
+      "name": "Send WhatsApp Text",
+      "webhookId": "11c72dba-9f8c-44e5-a164-043ba2bf7846",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        54320,
+        16944
+      ],
+      "id": "b644a2bf-a3fe-4f8c-80dc-bed221c8d649",
+      "name": "WhatsApp Trigger",
+      "webhookId": "cc9b25d7-bbcd-4592-ad92-5ea00ff1a6a7",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "3rJGDDs5rw1YWb5W",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "EN_ATTENTE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        54992,
+        16960
+      ],
+      "id": "eda7392c-7f1c-4a4a-91ad-6ffab11bbb9d",
+      "name": "Lookup Pending Rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper: strip invisible Unicode chars (RTL/LTR marks, zero-width spaces)\nfunction cleanText(s) {\n  return (s || '').replace(/[\\u200B-\\u200F\\u2028-\\u202F\\u2060-\\u206F\\uFEFF\\u00AD]/g, '').trim().toLowerCase();\n}\n\nconst triggerData = $('Classify Message').first().json;\n\n// PRIMARY: use _replyText already cleaned by Classify Message\nlet replyText = triggerData._replyText || '';\nlet senderPhone = '';\n\ntry {\n  if (triggerData.entry) {\n    const messages = triggerData.entry[0]?.changes?.[0]?.value?.messages;\n    if (messages && messages.length > 0) {\n      senderPhone = messages[0].from || '';\n    }\n  } else if (triggerData.messages) {\n    senderPhone = triggerData.messages[0]?.from || '';\n  }\n} catch (e) { /* ignore */ }\n\nreplyText = cleanText(replyText);\n\n// IMPORTANT: Skip messages starting with 'vo' - those are for Voice Over flow\nif (replyText.startsWith('vo ') || replyText === 'vo') {\n  return [];\n}\n\n// IMPORTANT: Skip messages starting with 'mt' - those are for Montage flow\nif (replyText.startsWith('mt ') || replyText === 'mt') {\n  return [];\n}\n\n// Analyze reply for confirmation or cancellation\nlet action = 'none';\nconst confirmWords = ['oui', 'ok', 'yes', 'confirm', 'confirmer', '1'];\nconst cancelWords = ['non', 'no', 'cancel', 'annuler', '2'];\n\nif (confirmWords.some(word => replyText.includes(word))) {\n  action = 'confirm';\n} else if (cancelWords.some(word => replyText.includes(word))) {\n  action = 'cancel';\n}\n\n// Only process the FIRST pending row (oldest one)\nconst rows = $input.all();\n\nif (action === 'none') {\n  return [];\n}\n\n// Check static data for late-voter detection\nconst staticData = $getWorkflowStaticData('global');\nconst lastPresentedTicketId = staticData.lastPresentedTicketId || '';\nconst lastProcessedAction = staticData.lastProcessedAction || '';\nconst lastProcessedProductName = staticData.lastProcessedProductName || '';\n\nif (rows.length === 0) {\n  // No more pending products - admin voted after queue is empty\n  return [{\n    json: {\n      action: 'no_pending',\n      senderPhone: senderPhone,\n      lastProcessedAction: lastProcessedAction,\n      lastProcessedProductName: lastProcessedProductName,\n      hasNextProduct: false,\n      nextProduct: null\n    }\n  }];\n}\n\nconst firstRow = rows[0];\n\n// Check if admin is voting on an already-processed product\nif (lastPresentedTicketId && firstRow.json.ticket_id !== lastPresentedTicketId) {\n  return [{\n    json: {\n      action: 'already_reviewed',\n      senderPhone: senderPhone,\n      lastProcessedAction: lastProcessedAction,\n      lastProcessedProductName: lastProcessedProductName,\n      hasNextProduct: true,\n      nextProduct: firstRow.json\n    }\n  }];\n}\n\n// Normal voting on the currently presented product\nreturn [{\n  json: {\n    ...firstRow.json,\n    replyText: replyText,\n    action: action,\n    senderPhone: senderPhone\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55120,
+        16944
+      ],
+      "id": "1da0bdf2-ee77-4b88-9085-8cd0078bc4c5",
+      "name": "Match and Parse Reply"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-confirm",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "confirm",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55344,
+        16944
+      ],
+      "id": "8388aab1-272d-46ee-90fb-a8920cb0ef40",
+      "name": "Route By Action"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "ticket_id": "={{ $json.ticket_id }}",
+            "status": "A_FAIRE",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Photo produit",
+              "displayName": "Photo produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de creation",
+              "displayName": "Date de creation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valider",
+              "displayName": "valider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number Adest total",
+              "displayName": "Number Adest total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number de personne",
+              "displayName": "Number de personne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de debut",
+              "displayName": "Date de debut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date dernier adset",
+              "displayName": "Date dernier adset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prix de ventes",
+              "displayName": "prix de ventes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pays",
+              "displayName": "Pays",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note Produit",
+              "displayName": "Note Produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priorite",
+              "displayName": "Priorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien De Page",
+              "displayName": "Lien De Page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien de site",
+              "displayName": "Lien de site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo",
+              "displayName": "photo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voice_over_approved",
+              "displayName": "voice_over_approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": " voice over link ",
+              "displayName": " voice over link ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving",
+              "displayName": "montage approving",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving link",
+              "displayName": "montage approving link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55584,
+        16848
+      ],
+      "id": "1b0968c6-64eb-4c34-92a6-d653f2a7dca5",
+      "name": "Update Status to A_FAIRE",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const matchData = $('Match and Parse Reply').item.json;\nconst senderPhone = matchData.senderPhone || '';\nconst productName = matchData.Name || 'Unknown';\nconst ticket_id = matchData.ticket_id || '';\n\nconst staticData = $getWorkflowStaticData('global');\nstaticData.lastProcessedTicketId = ticket_id;\nstaticData.lastProcessedAction = 'approved';\nstaticData.lastProcessedProductName = productName;\n\nconst admins = [\n  { phone: '213797841480', name: 'Admin 1' },\n  { phone: '213657367547', name: 'Admin 2' },\n  { phone: '213671406756', name: 'Admin 3' }\n];\nconst excluded = ['213792102843'];\n\nconst approver = admins.find(a => senderPhone.endsWith(a.phone)) || { name: senderPhone };\nconst others = admins.filter(a => !senderPhone.endsWith(a.phone) && !excluded.some(ex => a.phone.endsWith(ex)));\n\nconst nextRows = $input.all();\nconst nextProduct = (nextRows.length > 0 && nextRows[0].json && nextRows[0].json.Name)\n  ? nextRows[0].json : null;\n\n// Track which product was just presented so late-voter detection works on subsequent votes\nstaticData.lastPresentedTicketId = nextProduct ? (nextProduct.ticket_id || null) : null;\n\nlet messageText;\nlet recipients;\n\nif (nextProduct) {\n  recipients = others;\n  messageText = [\n    '✅ المنتج \"' + productName + '\" تمت الموافقة عليه من طرف: ' + approver.name,\n    '',\n    'يمكنك الآن مراجعة المنتج التالي 👇',\n    '',\n    '📦 المنتج: ' + (nextProduct.Name || ''),\n    '🔗 الرابط: ' + (nextProduct['Lien de site'] || ''),\n    '📔 الصفحة: ' + (nextProduct['Lien De Page'] || ''),\n    '💰 السعر: ' + (nextProduct['prix de ventes'] || ''),\n    '🌍 الدولة: ' + (nextProduct.Pays || ''),\n    '',\n    'Confirmer?',\n    '✅ OUI / OK',\n    '❌ NON / ANNULER'\n  ].join('\\n');\n} else {\n  // No more products — notify ALL admins including the voter\n  recipients = admins.filter(a => !excluded.some(ex => a.phone.endsWith(ex)));\n  messageText = [\n    '✅ المنتج \"' + productName + '\" تمت الموافقة عليه من طرف: ' + approver.name,\n    '',\n    '📭 تمت مراجعة جميع المنتجات! لا يوجد منتج آخر للمراجعة في الوقت الحالي.'\n  ].join('\\n');\n}\n\nif (recipients.length === 0) return [];\n\nreturn recipients.map(a => ({\n  json: {\n    notifyPhone: a.phone,\n    messageText: messageText\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55824,
+        17056
+      ],
+      "id": "687f5624-77f6-489c-abbb-7723db266d3f",
+      "name": "Prepare Admin Notifications"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "={{ $json.notifyPhone }}",
+        "textBody": "={{ $json.messageText }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56528,
+        17056
+      ],
+      "id": "f04bf41e-7105-4f62-86ba-2633d29afd05",
+      "name": "Notify Other Admins - Approved",
+      "webhookId": "c04ce4e3-9bf6-41ac-b0c9-9a7b2f6b2867",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare folder name using product name only\nconst matchData = $('Match and Parse Reply').item.json;\nconst client_name = matchData.Name || $json.Name || 'Unknown';\nconst folderName = client_name;\n\nreturn [{\n  json: {\n    ...matchData,\n    folder_name: folderName\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55824,
+        16848
+      ],
+      "id": "45ea9d3f-b864-46d9-9b75-f3a81a1a9286",
+      "name": "Prepare Folder Name"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.folder_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1r8LvcULwjGN1qzAmqNFZ9XbDFLuEpzLN"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        56064,
+        16992
+      ],
+      "id": "cf78ad91-ac11-44b1-8268-0c7fdc28573d",
+      "name": "Create Google Drive Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.id }}/permissions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "role",
+              "value": "writer"
+            },
+            {
+              "name": "type",
+              "value": "anyone"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        56064,
+        16720
+      ],
+      "id": "d78defc8-4d59-4732-8f83-d4ed20e8562d",
+      "name": "Share Drive Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $('Prepare Folder Name').item.json.ticket_id }}",
+            " voice over link ": "=https://drive.google.com/drive/folders/{{ $('Create Google Drive Folder').item.json.id }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Photo produit",
+              "displayName": "Photo produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de creation",
+              "displayName": "Date de creation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valider",
+              "displayName": "valider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number Adest total",
+              "displayName": "Number Adest total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number de personne",
+              "displayName": "Number de personne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de debut",
+              "displayName": "Date de debut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date dernier adset",
+              "displayName": "Date dernier adset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prix de ventes",
+              "displayName": "prix de ventes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pays",
+              "displayName": "Pays",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note Produit",
+              "displayName": "Note Produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priorite",
+              "displayName": "Priorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien De Page",
+              "displayName": "Lien De Page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien de site",
+              "displayName": "Lien de site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo",
+              "displayName": "photo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voice_over_approved",
+              "displayName": "voice_over_approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": " voice over link ",
+              "displayName": " voice over link ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving",
+              "displayName": "montage approving",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving link",
+              "displayName": "montage approving link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        56496,
+        16656
+      ],
+      "id": "c94130b6-fc7e-4dac-89c8-89b595680c5f",
+      "name": "Save Folder ID to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "status": "ARCHIVE"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55584,
+        17072
+      ],
+      "id": "a591dd0d-d56a-41df-bd90-8a6f5a6f19c9",
+      "name": "Update Status to ARCHIVE",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=971592002706173",
+        "recipientPhoneNumber": "213792102843",
+        "textBody": "=🎤 مرحلة جديدة: Voice Over\n\nTicket: {{ $('Prepare Folder Name').item.json.ticket_id }}\nProduct: {{ $('Prepare Folder Name').item.json.Name }}\n\n📸 Photo: {{ $('Prepare Folder Name').item.json['Photo produit'] }}\n🔗 Page: {{ $('Prepare Folder Name').item.json['Lien De Page'] }}\n🌐 Site: {{ $('Prepare Folder Name').item.json['Lien de site'] }}\n\n📂 رابط مجلد Google Drive (حط التسجيل الصوتي هنا):\nhttps://drive.google.com/drive/folders/{{ $('Create Google Drive Folder').item.json.id }}\n\nبعد ما تحط الملف، أرسل: *VO PRET*",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56304,
+        16848
+      ],
+      "id": "ae829b86-3fda-4b8d-9aef-a1e2c0217b5e",
+      "name": "VO - Notify Voice Over",
+      "webhookId": "10671581-52f6-4224-8c61-aeb1dfee4dd4",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "A_FAIRE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        54880,
+        17648
+      ],
+      "id": "1fe9ee95-1162-426e-941a-f87d793a4ebd",
+      "name": "VO - Lookup VO Pending",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper: strip invisible Unicode chars (RTL/LTR marks, zero-width spaces)\nfunction cleanText(s) {\n  return (s || '').replace(/[\\u200B-\\u200F\\u2028-\\u202F\\u2060-\\u206F\\uFEFF\\u00AD]/g, '').trim().toLowerCase();\n}\n\nconst triggerData = $('Classify Message').first().json;\n\n// PRIMARY: use _replyText already extracted and cleaned by Classify Message\nlet replyText = triggerData._replyText || '';\nlet senderPhone = '';\nlet hasAudio = false;\nlet audioMediaId = '';\n\ntry {\n  // Extract senderPhone and audio info from raw webhook data\n  if (triggerData.entry) {\n    const messages = triggerData.entry[0]?.changes?.[0]?.value?.messages;\n    if (messages && messages.length > 0) {\n      senderPhone = messages[0].from || '';\n      if (messages[0].type === 'audio') {\n        hasAudio = true;\n        audioMediaId = messages[0].audio?.id || '';\n        if (!replyText) replyText = 'vo oui';\n      }\n    }\n  } else if (triggerData.messages) {\n    senderPhone = triggerData.messages[0]?.from || '';\n    if (triggerData.messages[0]?.type === 'audio') {\n      hasAudio = true;\n      audioMediaId = triggerData.messages[0].audio?.id || '';\n      if (!replyText) replyText = 'vo oui';\n    }\n  }\n} catch (e) { /* senderPhone/audio extraction failed, continue */ }\n\nreplyText = cleanText(replyText);\n\n// Only process if reply contains 'vo' keyword or is a voice note\nif (!replyText.includes('vo') && !hasAudio) {\n  return [];\n}\n\nlet action = 'none';\nconst pretWords = ['vo pret', 'vo done', 'vo prete'];\nconst confirmWords = ['vo oui', 'vo ok', 'vo yes', 'vo confirm'];\nconst cancelWords = ['vo cancel', 'vo annuler'];\nconst rejectWords = ['vo non', 'vo no', 'vo refuser'];\n\nif (hasAudio || pretWords.some(w => replyText.includes(w))) {\n  action = 'vo_pret';\n} else if (confirmWords.some(w => replyText.includes(w))) {\n  action = 'approve_vo';\n} else if (cancelWords.some(w => replyText.includes(w))) {\n  action = 'cancel_vo';\n} else if (rejectWords.some(w => replyText.includes(w))) {\n  action = 'reject_vo';\n}\n\nif (action === 'none') return [];\n\n// Filter for pending VO rows\nconst rows = $input.all();\nconst voRows = rows.filter(r => {\n  const st = (r.json.status || '').toString().trim();\n  const va = (r.json.voice_over_approved || '').toString().trim().toLowerCase();\n  return st === 'A_FAIRE' && va !== 'true' && va !== '1';\n});\n\nif (voRows.length === 0) {\n  // Fallback: try ALL rows if status filter was too strict\n  const allRows = rows.filter(r => {\n    const va = (r.json.voice_over_approved || '').toString().trim().toLowerCase();\n    return va !== 'true' && va !== '1';\n  });\n  if (allRows.length === 0) return [];\n  const firstRow = allRows[0];\n  const ticket_id = firstRow.json.ticket_id || 'UNKNOWN';\n  const client_name = firstRow.json.Name || 'Unknown';\n  const folderName = `${ticket_id}_${client_name}`;\n  return [{ json: { ...firstRow.json, action, senderPhone, hasAudio, audioMediaId, replyText, folder_name_for_retry: folderName } }];\n}\n\nconst firstRow = voRows[0];\nconst ticket_id = firstRow.json.ticket_id || 'UNKNOWN';\nconst client_name = firstRow.json.Name || 'Unknown';\nconst folderName = `${ticket_id}_${client_name}`;\n\nreturn [{\n  json: {\n    ...firstRow.json,\n    action: action,\n    senderPhone: senderPhone,\n    hasAudio: hasAudio,\n    audioMediaId: audioMediaId,\n    replyText: replyText,\n    folder_name_for_retry: folderName\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55120,
+        17648
+      ],
+      "id": "97fbcdb9-e40e-4372-a153-b9be5fcbea92",
+      "name": "VO - Parse VO Reply"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-vo-approve",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "approve_vo",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "cond-vo-pret",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "vo_pret",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55344,
+        17648
+      ],
+      "id": "e8a52bfc-c476-462d-9072-63616b3d25f4",
+      "name": "VO - Approve or Reject"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ticket_id = $json.ticket_id || 'UNKNOWN';\nconst client_name = $json.Name || 'Unknown';\nconst folderName = `${ticket_id}_${client_name}`;\nconst nextStepId = (parseInt($json.step_id) || 0) + 1;\n\nreturn [{\n  json: {\n    ...($json),\n    folder_name: folderName,\n    step_id_next: nextStepId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55584,
+        17552
+      ],
+      "id": "a76655a0-2057-4938-ba8d-f6b42f7464e4",
+      "name": "VO - Prepare Folder Name"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=name = '{{ $json.folder_name }}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            },
+            {
+              "name": "fields",
+              "value": "files(id, name, webViewLink)"
+            },
+            {
+              "name": "pageSize",
+              "value": "1"
+            },
+            {
+              "name": "orderBy",
+              "value": "createdTime desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        55824,
+        17552
+      ],
+      "id": "dfa65c24-d6af-4937-8fe5-cdd7e7c7c174",
+      "name": "VO - Find Create Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract folder ID - prefer folder_id from sheet, then voice over link URL, fall back to search\nconst prevData = $('VO - Prepare Folder Name').first().json;\nconst searchResult = $json;\n\nlet folderId = '';\nlet folderName = prevData.folder_name || '';\n\n// 1. Use folder_id column from Google Sheet\nif (prevData.folder_id && prevData.folder_id.trim() !== '') {\n  folderId = prevData.folder_id.trim();\n}\n\n// 2. Extract folder ID from 'voice over link' URL (column name has surrounding spaces in sheet)\nconst voLinkVal = prevData[' voice over link '] || prevData['voice over link'] || prevData['voice_over_link'] || '';\nif (!folderId && voLinkVal) {\n  const m = voLinkVal.match(/\\/folders\\/([a-zA-Z0-9_-]+)/);\n  if (m) folderId = m[1];\n}\n\n// 3. Fall back to Google Drive name search result\nif (!folderId && searchResult.files && searchResult.files.length > 0) {\n  folderId = searchResult.files[0].id;\n  folderName = searchResult.files[0].name;\n}\n\nreturn [{\n  json: {\n    ...prevData,\n    folderId: folderId,\n    folderName: folderName,\n    folderFound: folderId !== ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        56000,
+        17552
+      ],
+      "id": "a62cba2f-7eba-48ba-ba47-ab8a75b4d7fe",
+      "name": "VO - Extract Folder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-folder-found",
+              "leftValue": "={{ $json.folderFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        56144,
+        17552
+      ],
+      "id": "fab35074-15aa-4a68-952a-7dbe246e9bc5",
+      "name": "VO - Folder Found?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن الخطوة 1 اكتملت بنجاح.\nأعد إرسال: VO OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56448,
+        17824
+      ],
+      "id": "d75b64b1-6a05-4687-be94-c9cc24a97acf",
+      "name": "VO - No Folder Warning",
+      "webhookId": "3393ea71-e0bb-4383-8b64-ca776e8912c4",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        56240,
+        17328
+      ],
+      "id": "808ab114-36ab-462b-8916-fb6ae13556ba",
+      "name": "VO - Wait Before List",
+      "webhookId": "vo-wait-before-list-wh"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-should-retry",
+              "leftValue": "={{ $json._shouldRetry }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        56704,
+        17552
+      ],
+      "id": "b7c4f3d1-5019-4ee0-99b7-699bbaea4169",
+      "name": "VO - Should Retry?"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        56816,
+        17792
+      ],
+      "id": "7414f49e-43cf-4ab7-970c-ccdb7093ade7",
+      "name": "VO - Retry Wait",
+      "webhookId": "vo-retry-wait-wh"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ \"'\" + $json.folderId + \"' in parents and trashed = false and (mimeType = 'audio/mpeg' or mimeType = 'audio/mp3' or mimeType = 'audio/wav' or mimeType = 'audio/ogg' or mimeType = 'audio/x-m4a')\" }}"
+            },
+            {
+              "name": "fields",
+              "value": "files(id, name, mimeType, webViewLink, createdTime), incompleteSearch"
+            },
+            {
+              "name": "orderBy",
+              "value": "createdTime desc"
+            },
+            {
+              "name": "pageSize",
+              "value": "10"
+            },
+            {
+              "name": "includeItemsFromAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "corpora",
+              "value": "allDrives"
+            },
+            {
+              "name": "spaces",
+              "value": "drive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        56336,
+        17552
+      ],
+      "id": "d7f5253a-9734-4acd-a9a2-17d15dc747fd",
+      "name": "VO - List Files in Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// VO - Extract File v3 (robust retry via staticData + audio filtering)\nconst prevData = $('VO - Extract Folder').first().json;\nconst searchResult = $json;\n\n// --- Use workflow static data for reliable retry counting ---\n// (persists across loop iterations even when HTTP Request replaces data)\nconst staticData = $getWorkflowStaticData('global');\nconst retryKey = 'vo_file_retry_' + (prevData.ticket_id || prevData.folderId || 'default');\nconst currentRetry = staticData[retryKey] || 0;\nconst maxRetries = 5;\n\nlet fileId = '';\nlet fileName = '';\nlet fileMimeType = '';\nlet fileLink = '';\nlet filesList = [];\n\n// --- Handle ALL possible response formats from HTTP Request ---\nif (searchResult.files && Array.isArray(searchResult.files)) {\n  filesList = searchResult.files;\n} else if (searchResult.data && searchResult.data.files && Array.isArray(searchResult.data.files)) {\n  filesList = searchResult.data.files;\n} else if (Array.isArray(searchResult)) {\n  filesList = searchResult;\n} else if (searchResult.items && Array.isArray(searchResult.items)) {\n  filesList = searchResult.items;\n}\n\n// --- Filter for audio files only (mimeType starts with 'audio/') ---\nconst audioFiles = filesList.filter(f => {\n  const mime = (f.mimeType || '').toLowerCase();\n  return mime.startsWith('audio/');\n});\n\n// Prefer audio files; fall back to all files if none match\nconst targetFiles = audioFiles.length > 0 ? audioFiles : filesList;\n\nif (targetFiles.length > 0) {\n  const chosen = targetFiles[0];\n  fileId = chosen.id || '';\n  fileName = chosen.name || '';\n  fileMimeType = chosen.mimeType || '';\n  fileLink = chosen.webViewLink || '';\n}\n\n// --- Retry logic using staticData ---\nconst shouldRetry = fileId === '' && currentRetry < maxRetries;\n\nif (shouldRetry) {\n  // Increment retry counter for next iteration\n  staticData[retryKey] = currentRetry + 1;\n} else {\n  // Reset counter: either file found or max retries exhausted\n  delete staticData[retryKey];\n}\n\nreturn [{\n  json: {\n    ...prevData,\n    id: fileId,\n    fileName: fileName,\n    fileMimeType: fileMimeType,\n    fileLink: fileLink,\n    fileFound: fileId !== '',\n    isAudioFile: audioFiles.length > 0,\n    _retryCount: currentRetry,\n    _shouldRetry: shouldRetry,\n    _debug_totalFiles: filesList.length,\n    _debug_audioFiles: audioFiles.length,\n    _debug_rawKeys: Object.keys(searchResult || {}).join(','),\n    _debug_folderId: prevData.folderId || 'NO_FOLDER_ID'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        56528,
+        17552
+      ],
+      "id": "fafff927-2cda-4b96-811e-d6231c4f7db0",
+      "name": "VO - Extract File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-file-exists",
+              "leftValue": "={{ $json.fileFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        57056,
+        17552
+      ],
+      "id": "48887753-406b-4f59-9807-34e3f8f0aacf",
+      "name": "VO - File Exists?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213792102843",
+        "textBody": "=⚠️ ما لقيناش ملف في المجلد!\n\nرفع التسجيل الصوتي في المجلد التالي:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nبعد ما تحط الملف، أعد إرسال: *VO PRET*",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57408,
+        17824
+      ],
+      "id": "22ac7e70-a01d-4783-b665-ebe50087587d",
+      "name": "VO - No File Warning",
+      "webhookId": "ac32450d-82d1-4b85-b268-d935163eddd7",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "voice_over_approved": "true"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        57248,
+        17552
+      ],
+      "id": "b9d8fe6f-c3ab-4eea-8c57-a417224a17c0",
+      "name": "VO - Append Approved Row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "Name": "={{ $json.Name }}",
+            "status": "ARCHIVE",
+            "voice_over_approved": "false"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55584,
+        17744
+      ],
+      "id": "bc8d15b3-c236-4f96-b1d1-86344af5f108",
+      "name": "VO - Update Archive Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=✅ Voice Over تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('VO - Extract File').item.json.Name }}\n\n🎤 رابط مجلد التسجيل الصوتي:\nhttps://drive.google.com/drive/folders/{{ $('VO - Extract File').item.json.folderId }}\n\nvoice_over_approved = true\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57712,
+        17232
+      ],
+      "id": "a4811826-e9bc-4288-937f-349956ca306a",
+      "name": "VO - Confirm Approved",
+      "webhookId": "7d31662a-99e0-4c8e-830a-a3a75da2e2b6",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "voice_over_approved": "true"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        57504,
+        17248
+      ],
+      "id": "21c06235-46fe-4e25-bc88-7ccd281eeb30",
+      "name": "VO - Mark Original Done",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213792102843",
+        "textBody": "=❌ Voice Over تم رفضه\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔄 رفع تسجيل صوتي جديد في المجلد ديال Google Drive.\n\nبعد ما تحط الملف، أرسل:\n*VO PRET* ✅\n\nولا إذا بغيت تلغي:\n*VO CANCEL* ❌",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56096,
+        17888
+      ],
+      "id": "8f217247-76c7-467b-8dd8-0e43cad03166",
+      "name": "VO - Ask Retry",
+      "webhookId": "490e758c-5c35-4135-a336-0bd291e01f51",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-is-cancel",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "cancel_vo",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55232,
+        17936
+      ],
+      "id": "74e51b5b-fd78-4dd7-995a-c53bb1e13dd9",
+      "name": "VO - Reject or Cancel?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=❌ تم إلغاء ال Voice Over نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        55888,
+        17712
+      ],
+      "id": "ce16fe65-3469-4455-aee9-eda117613636",
+      "name": "VO - Confirm Cancelled",
+      "webhookId": "8a744146-5dcf-4546-895b-a8d3bbfccce1",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213796001569",
+        "textBody": "=🎬 مرحلة جديدة: Montage\n\nTicket: {{ $('VO - Extract File').item.json.ticket_id }}\nProduct: {{ $('VO - Extract File').item.json.Name }}\n\n📸 Photo: {{ $('VO - Extract File').item.json['Photo produit'] }}\n🔗 Page: {{ $('VO - Extract File').item.json['Lien De Page'] }}\n🌐 Site: {{ $('VO - Extract File').item.json['Lien de site'] }}\n\n📂 رابط مجلد Google Drive (حط فيديو المونتاج هنا):\nhttps://drive.google.com/drive/folders/{{ $('VO - Extract File').item.json.folderId }}\n\nبعد ما تحط الملف، أرسل: *MT PRET*",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57952,
+        16992
+      ],
+      "id": "8303ed38-5242-4f42-9c42-31d12d9fff43",
+      "name": "MT - Notify Montage",
+      "webhookId": "27ce0ac3-1c7d-4c13-be12-b0da5f0f46cc",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "voice_over_approved",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        54880,
+        18144
+      ],
+      "id": "b9741e04-13ce-41e6-8405-ae97629e7a16",
+      "name": "MT - Lookup MT Pending",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper: strip invisible Unicode chars (RTL/LTR marks, zero-width spaces)\nfunction cleanText(s) {\n  return (s || '').replace(/[\\u200B-\\u200F\\u2028-\\u202F\\u2060-\\u206F\\uFEFF\\u00AD]/g, '').trim().toLowerCase();\n}\n\nconst triggerData = $('Classify Message').first().json;\n\n// PRIMARY: use _replyText already cleaned by Classify Message\nlet replyText = triggerData._replyText || '';\nlet senderPhone = '';\n\ntry {\n  if (triggerData.entry) {\n    const messages = triggerData.entry[0]?.changes?.[0]?.value?.messages;\n    if (messages && messages.length > 0) {\n      senderPhone = messages[0].from || '';\n    }\n  } else if (triggerData.messages) {\n    senderPhone = triggerData.messages[0]?.from || '';\n  }\n} catch (e) { /* ignore */ }\n\nreplyText = cleanText(replyText);\n\n// Only process if reply contains 'mt' keyword\nif (!replyText.includes('mt')) {\n  return [];\n}\n\nlet action = 'none';\nconst pretWords = ['mt pret', 'mt done', 'mt prete'];\nconst confirmWords = ['mt oui', 'mt ok', 'mt yes', 'mt confirm'];\nconst cancelWords = ['mt cancel', 'mt annuler'];\nconst rejectWords = ['mt non', 'mt no', 'mt refuser'];\n\nif (pretWords.some(w => replyText.includes(w))) {\n  action = 'mt_pret';\n} else if (confirmWords.some(w => replyText.includes(w))) {\n  action = 'approve_mt';\n} else if (cancelWords.some(w => replyText.includes(w))) {\n  action = 'cancel_mt';\n} else if (rejectWords.some(w => replyText.includes(w))) {\n  action = 'reject_mt';\n}\n\nif (action === 'none') return [];\n\n// Filter for pending MT rows (VO_DONE, montage not yet approved)\nconst rows = $input.all();\nconst mtRows = rows.filter(r => {\n  const ma = (r.json['montage approving'] || '').toString().trim().toLowerCase();\n  return ma !== 'true' && ma !== '1';\n});\n\nif (mtRows.length === 0) return [];\n\nconst firstRow = mtRows[0];\n\nconst ticket_id = firstRow.json.ticket_id || 'UNKNOWN';\nconst client_name = (firstRow.json.Name || 'Unknown').replace(/[^a-zA-Z0-9_\\-\\s]/g, '');\nconst folderName = `${ticket_id}_${client_name}`;\n\nreturn [{\n  json: {\n    ...firstRow.json,\n    action: action,\n    senderPhone: senderPhone,\n    replyText: replyText,\n    folder_name_for_retry: folderName\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55120,
+        18144
+      ],
+      "id": "fb6b9ed4-269b-4d86-b924-02512b7a17af",
+      "name": "MT - Parse MT Reply"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-approve",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "approve_mt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "cond-mt-pret",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "mt_pret",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55344,
+        18144
+      ],
+      "id": "e94e72c9-5b33-4627-95d0-905878b7ea19",
+      "name": "MT - Approve or Reject"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ticket_id = $json.ticket_id || 'UNKNOWN';\nconst client_name = $json.Name || 'Unknown';\nconst folderName = `${ticket_id}_${client_name}`;\nconst nextStepId = (parseInt($json.step_id) || 0) + 1;\n\nreturn [{\n  json: {\n    ...($json),\n    folder_name: folderName,\n    step_id_next: nextStepId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55584,
+        18048
+      ],
+      "id": "78d36166-cbfc-4980-b160-d5bf014abcae",
+      "name": "MT - Prepare Folder Name"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=name = '{{ $json.folder_name }}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            },
+            {
+              "name": "fields",
+              "value": "files(id, name, webViewLink)"
+            },
+            {
+              "name": "pageSize",
+              "value": "1"
+            },
+            {
+              "name": "orderBy",
+              "value": "createdTime desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        55824,
+        18048
+      ],
+      "id": "a43a3df7-8edc-46d2-9785-4561968ccb31",
+      "name": "MT - Find Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract folder ID - prefer folder_id from sheet, then voice over link URL, fall back to search\nconst prevData = $('MT - Prepare Folder Name').first().json;\nconst searchResult = $json;\n\nlet folderId = '';\nlet folderName = prevData.folder_name || '';\n\n// 1. Use folder_id column from Google Sheet\nif (prevData.folder_id && prevData.folder_id.trim() !== '') {\n  folderId = prevData.folder_id.trim();\n}\n\n// 2. Extract folder ID from 'voice over link' URL (this is where the folder ID is stored after approval)\nconst voLinkVal = prevData[' voice over link '] || prevData['voice over link'] || prevData['voice_over_link'] || '';\nif (!folderId && voLinkVal) {\n  const m = voLinkVal.match(/\\/folders\\/([a-zA-Z0-9_-]+)/);\n  if (m) folderId = m[1];\n}\n\n// 3. Fall back to Google Drive name search result\nif (!folderId && searchResult.files && searchResult.files.length > 0) {\n  folderId = searchResult.files[0].id;\n  folderName = searchResult.files[0].name;\n}\n\nreturn [{\n  json: {\n    ...prevData,\n    folderId: folderId,\n    folderName: folderName,\n    folderFound: folderId !== ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        56000,
+        18048
+      ],
+      "id": "b30b95b5-58dd-4a2f-9004-3146ae9f88d4",
+      "name": "MT - Extract Folder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-folder-found",
+              "leftValue": "={{ $json.folderFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        56144,
+        18048
+      ],
+      "id": "774fb949-c243-4d8f-a964-8c15a3103f11",
+      "name": "MT - Folder Found?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن خطوة Voice Over اكتملت بنجاح.\nأعد إرسال: MT OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56336,
+        18160
+      ],
+      "id": "9f596108-c2e0-45fe-a224-efdf8fa35370",
+      "name": "MT - No Folder Warning",
+      "webhookId": "e97f7e95-610d-44f8-b37f-e1d3ef10cbcb",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        56416,
+        18048
+      ],
+      "id": "1032e53c-f41e-4bd8-a6dc-a35f2be660c8",
+      "name": "MT - Wait Before List",
+      "webhookId": "mt-wait-before-list-wh"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-should-retry",
+              "leftValue": "={{ $json._shouldRetry }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        56880,
+        18048
+      ],
+      "id": "2949200c-4b52-4671-b06b-be3e4f7225ba",
+      "name": "MT - Should Retry?"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        56864,
+        18336
+      ],
+      "id": "5ed5376f-c1e4-4b16-98dc-7832bac71bec",
+      "name": "MT - Retry Wait",
+      "webhookId": "mt-retry-wait-wh"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ \"'\" + $json.folderId + \"' in parents and trashed = false\" }}"
+            },
+            {
+              "name": "fields",
+              "value": "files(id, name, mimeType, webViewLink, createdTime), incompleteSearch"
+            },
+            {
+              "name": "orderBy",
+              "value": "createdTime desc"
+            },
+            {
+              "name": "pageSize",
+              "value": "10"
+            },
+            {
+              "name": "includeItemsFromAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "supportsAllDrives",
+              "value": "true"
+            },
+            {
+              "name": "corpora",
+              "value": "allDrives"
+            },
+            {
+              "name": "spaces",
+              "value": "drive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        56528,
+        18048
+      ],
+      "id": "55c78019-7c74-481b-88ee-86b0a2b93209",
+      "name": "MT - List Files in Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QXBgaGNgyPbKUzpV",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// MT - Extract File v3 (robust retry via staticData + video/image filtering)\nconst prevData = $('MT - Extract Folder').first().json;\nconst searchResult = $json;\n\n// --- Use workflow static data for reliable retry counting ---\nconst staticData = $getWorkflowStaticData('global');\nconst retryKey = 'mt_file_retry_' + (prevData.ticket_id || prevData.folderId || 'default');\nconst currentRetry = staticData[retryKey] || 0;\nconst maxRetries = 5;\n\nlet fileId = '';\nlet fileName = '';\nlet fileMimeType = '';\nlet fileLink = '';\nlet filesList = [];\n\n// --- Handle ALL possible response formats from HTTP Request ---\nif (searchResult.files && Array.isArray(searchResult.files)) {\n  filesList = searchResult.files;\n} else if (searchResult.data && searchResult.data.files && Array.isArray(searchResult.data.files)) {\n  filesList = searchResult.data.files;\n} else if (Array.isArray(searchResult)) {\n  filesList = searchResult;\n} else if (searchResult.items && Array.isArray(searchResult.items)) {\n  filesList = searchResult.items;\n}\n\n// --- Filter for video/image files (montage output) ---\nconst mediaFiles = filesList.filter(f => {\n  const mime = (f.mimeType || '').toLowerCase();\n  return mime.startsWith('video/') || mime.startsWith('image/');\n});\n\n// Prefer video/image files; fall back to any file if none match\nconst targetFiles = mediaFiles.length > 0 ? mediaFiles : filesList;\n\nif (targetFiles.length > 0) {\n  const chosen = targetFiles[0];\n  fileId = chosen.id || '';\n  fileName = chosen.name || '';\n  fileMimeType = chosen.mimeType || '';\n  fileLink = chosen.webViewLink || '';\n}\n\n// --- Retry logic using staticData ---\nconst shouldRetry = fileId === '' && currentRetry < maxRetries;\n\nif (shouldRetry) {\n  staticData[retryKey] = currentRetry + 1;\n} else {\n  delete staticData[retryKey];\n}\n\nreturn [{\n  json: {\n    ...prevData,\n    id: fileId,\n    fileName: fileName,\n    fileMimeType: fileMimeType,\n    fileLink: fileLink,\n    fileFound: fileId !== '',\n    isMediaFile: mediaFiles.length > 0,\n    _retryCount: currentRetry,\n    _shouldRetry: shouldRetry,\n    _debug_totalFiles: filesList.length,\n    _debug_mediaFiles: mediaFiles.length,\n    _debug_rawKeys: Object.keys(searchResult || {}).join(','),\n    _debug_folderId: prevData.folderId || 'NO_FOLDER_ID'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        56704,
+        18048
+      ],
+      "id": "c6f50000-3179-41ad-902c-f22de7148f27",
+      "name": "MT - Extract File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-file-exists",
+              "leftValue": "={{ $json.fileFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        57264,
+        18064
+      ],
+      "id": "3fe8f93a-8c8e-4416-bd4b-84f5c57d0ec4",
+      "name": "MT - File Exists?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213796001569",
+        "textBody": "=⚠️ ما لقيناش فيديو في المجلد!\n\nرفع فيديو المونتاج في المجلد التالي:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nبعد ما تحط الملف، أعد إرسال: *MT PRET*",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57472,
+        18368
+      ],
+      "id": "d7700051-2d87-4797-bc61-c31e9977bfc6",
+      "name": "MT - No File Warning",
+      "webhookId": "bbf20006-149f-4c3b-8033-a35636069324",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "montage approving": "TRUE",
+            "montage approving link": "=https://drive.google.com/drive/folders/{{ $json.folderId }}"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        57616,
+        18064
+      ],
+      "id": "18eef813-411b-4f25-b813-02a95364f33e",
+      "name": "MT - Append Approved Row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "montage approving": "TRUE",
+            "montage approving link": "=https://drive.google.com/drive/folders/{{ $json.folderId }}"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        57808,
+        18192
+      ],
+      "id": "88393fa0-74d6-46ea-abde-8df6e21a5448",
+      "name": "MT - Mark Original Done",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=✅ Montage تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('MT - Lookup MT Pending').item.json.Name }}\n\n🎬 رابط مجلد المونتاج:\nhttps://drive.google.com/drive/folders/{{ $('MT - Extract Folder').item.json.folderId }}\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58096,
+        18224
+      ],
+      "id": "f068c4fb-ef91-4fac-87e2-00def2846abd",
+      "name": "MT - Confirm Approved",
+      "webhookId": "55f81fcc-c837-4cd8-841d-9bbfd551d573",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-is-cancel",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "cancel_mt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55248,
+        18416
+      ],
+      "id": "6f16d6a9-1c26-44ec-a337-e100a12d9959",
+      "name": "MT - Reject or Cancel?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "Name": "={{ $json.Name }}",
+            "status": "ARCHIVE",
+            "montage approving": "FALSE",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Photo produit",
+              "displayName": "Photo produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de creation",
+              "displayName": "Date de creation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valider",
+              "displayName": "valider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number Adest total",
+              "displayName": "Number Adest total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number de personne",
+              "displayName": "Number de personne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de debut",
+              "displayName": "Date de debut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date dernier adset",
+              "displayName": "Date dernier adset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prix de ventes",
+              "displayName": "prix de ventes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pays",
+              "displayName": "Pays",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note Produit",
+              "displayName": "Note Produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priorite",
+              "displayName": "Priorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien De Page",
+              "displayName": "Lien De Page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien de site",
+              "displayName": "Lien de site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo",
+              "displayName": "photo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voice_over_approved",
+              "displayName": "voice_over_approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": " voice over link ",
+              "displayName": " voice over link ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving",
+              "displayName": "montage approving",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "montage approving link",
+              "displayName": "montage approving link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55584,
+        18240
+      ],
+      "id": "3527c880-51d8-4499-9e35-8211b9ad6f3d",
+      "name": "MT - Update Archive Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=❌ تم إلغاء المونتاج نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        55920,
+        18256
+      ],
+      "id": "f39826a6-69a2-4a1a-b059-7d47971be42d",
+      "name": "MT - Confirm Cancelled",
+      "webhookId": "effc5c99-cd5f-4cd2-9e54-9afb5a5c24ab",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213796001569",
+        "textBody": "=❌ Montage تم رفضه\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔄 رفع فيديو مونتاج جديد في المجلد ديال Google Drive.\n\nبعد ما تحط الملف، أرسل:\n*MT PRET* ✅\n\nولا إذا بغيت تلغي:\n*MT CANCEL* ❌",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56144,
+        18512
+      ],
+      "id": "823a311e-5f2d-4235-82ad-55d2e1f6fb67",
+      "name": "MT - Ask Retry",
+      "webhookId": "dfa8d001-88cc-49e1-90e1-99b66ba60e84",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper: strip invisible Unicode chars (RTL/LTR marks, zero-width spaces, etc.)\nfunction cleanText(s) {\n  return (s || '').replace(/[\\u200B-\\u200F\\u2028-\\u202F\\u2060-\\u206F\\uFEFF\\u00AD\\u200E\\u200F]/g, '').trim().toLowerCase();\n}\n\nconst triggerData = $input.first().json;\nlet replyText = '';\ntry {\n  if (triggerData.entry) {\n    const changes = triggerData.entry[0]?.changes;\n    const value = changes && changes[0]?.value;\n    const messages = value?.messages;\n    if (messages && messages.length > 0) {\n      if (messages[0].type === 'text') {\n        replyText = messages[0].text.body;\n      } else if (messages[0].type === 'audio') {\n        replyText = 'vo oui';\n      } else if (messages[0].type === 'interactive') {\n        replyText = messages[0].interactive?.button_reply?.id || '';\n      }\n    }\n  }\n  if (!replyText && triggerData.messages) {\n    if (triggerData.messages[0].type === 'audio') {\n      replyText = 'vo oui';\n    } else {\n      replyText = triggerData.messages[0].text?.body || '';\n    }\n  }\n  if (!replyText && triggerData.text) {\n    replyText = typeof triggerData.text === 'string' ? triggerData.text : (triggerData.text?.body || '');\n  }\n  if (!replyText && triggerData.body) {\n    replyText = typeof triggerData.body === 'string' ? triggerData.body : '';\n  }\n} catch (e) {\n  replyText = '';\n}\n\nreplyText = cleanText(replyText);\n\nlet route = 'general';\nif (replyText.startsWith('vo ') || replyText === 'vo') {\n  route = 'vo';\n} else if (replyText.startsWith('mt ') || replyText === 'mt') {\n  route = 'mt';\n}\nreturn [{ json: { ...triggerData, _route: route, _replyText: replyText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        54592,
+        16928
+      ],
+      "id": "9b937e10-91e5-4356-bb8e-84e5fa761d91",
+      "name": "Classify Message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-is-vo",
+              "leftValue": "={{ $json._route }}",
+              "rightValue": "vo",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        54560,
+        17248
+      ],
+      "id": "30e1910a-e07d-401f-bd1a-0edbc059f959",
+      "name": "Is VO Message?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-is-mt",
+              "leftValue": "={{ $json._route }}",
+              "rightValue": "mt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        54832,
+        17152
+      ],
+      "id": "920673b9-9308-4635-9a63-42a44734364b",
+      "name": "Is MT Message?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "montage approving": "FALSE"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55856,
+        18496
+      ],
+      "id": "bd463e14-a393-4f3e-908c-f70e0f4f7a30",
+      "name": "MT - Set Rejected False",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "voice_over_approved": "FALSE",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Photo produit",
+              "displayName": "Photo produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de creation",
+              "displayName": "Date de creation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valider",
+              "displayName": "valider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number Adest total",
+              "displayName": "Number Adest total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number de personne",
+              "displayName": "Number de personne",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date de debut",
+              "displayName": "Date de debut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date dernier adset",
+              "displayName": "Date dernier adset",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prix de ventes",
+              "displayName": "prix de ventes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pays",
+              "displayName": "Pays",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note Produit",
+              "displayName": "Note Produit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priorite",
+              "displayName": "Priorite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien De Page",
+              "displayName": "Lien De Page",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lien de site",
+              "displayName": "Lien de site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo",
+              "displayName": "photo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voice_over_approved",
+              "displayName": "voice_over_approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " voice over link ",
+              "displayName": " voice over link ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving",
+              "displayName": "montage approving",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "montage approving link",
+              "displayName": "montage approving link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        55872,
+        17856
+      ],
+      "id": "184d5ace-5ee4-4cc7-b80c-be9148a5228a",
+      "name": "VO - Set Rejected False",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-vo-is-approve",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "vo_pret",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        57504,
+        17552
+      ],
+      "id": "d764228d-b231-45c0-8931-351a93cec580",
+      "name": "VO - Check Sender"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=🎤 Voice Over جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ VO OUI - موافق\n❌ VO NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57744,
+        17456
+      ],
+      "id": "6c778187-6c98-4b86-bf7a-a9bb00e9bd7e",
+      "name": "VO - Request Owner Approval",
+      "webhookId": "4db20363-641d-449e-b281-cfe33a21f5ac",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-mt-is-pret",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "mt_pret",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        57440,
+        18016
+      ],
+      "id": "8fcdf6f6-4656-4a2d-84a7-c4c4611e2654",
+      "name": "MT - Check Sender"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=🎬 Montage جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ MT OUI - موافق\n❌ MT NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57744,
+        17952
+      ],
+      "id": "3fede802-dfdd-46ae-b114-7ccb778d2f8f",
+      "name": "MT - Request Owner Approval",
+      "webhookId": "380e7cc7-a3df-47f8-851f-a36df6ce8097",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=⚠️ تنبيه: مجلد Voice Over فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Voice Over ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57728,
+        17744
+      ],
+      "id": "532de91b-1666-4613-af6d-68d235cc573d",
+      "name": "VO - Alert Owner No File",
+      "webhookId": "f5774785-3d4d-4fe3-851a-8e3e762cd3d8",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213797841480",
+        "textBody": "=⚠️ تنبيه: مجلد Montage فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Montage ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57696,
+        18368
+      ],
+      "id": "b8f1044c-9794-4a3a-b3ae-dbb750a0fb04",
+      "name": "MT - Alert Owner No File",
+      "webhookId": "13808283-60f1-4b06-9e09-e9b915423984",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=📋 Nouveau Ticket: {{ $('Generate Ticket ID').item.json.ticket_id }}\n\n📦 معلومات المنتج:\n- اسم المنتج: {{ $('Generate Ticket ID').item.json.Name }}\n- الرابط: {{ $('Generate Ticket ID').item.json[\"Lien de site\"] }}\n- الصفحة: {{ $('Generate Ticket ID').item.json[\"Lien De Page\"] }}\n- السعر: {{ $('Generate Ticket ID').item.json[\"prix de ventes\"] }}\n- الدولة: {{ $('Generate Ticket ID').item.json.Pays }}\n\n📊 Google Sheet:\nhttps://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit\n\nConfirmer?\n✅ OUI / OK\n❌ NON / ANNULER",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        55696,
+        16544
+      ],
+      "id": "738e612f-e878-4479-a4f7-462455eda3e9",
+      "name": "Send WhatsApp Text 2",
+      "webhookId": "send-wa-text-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن الخطوة 1 اكتملت بنجاح.\nأعد إرسال: VO OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56624,
+        17840
+      ],
+      "id": "afb0b883-6e5b-4a46-9d93-c227162f79cc",
+      "name": "VO - No Folder Warning 2",
+      "webhookId": "vo-no-folder-warn-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=✅ Voice Over تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('VO - Extract File').item.json.Name }}\n\n🎤 رابط مجلد التسجيل الصوتي:\nhttps://drive.google.com/drive/folders/{{ $('VO - Extract File').item.json.folderId }}\n\nvoice_over_approved = true\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58000,
+        17232
+      ],
+      "id": "2eae4fbc-3060-4b30-8921-ea0089770454",
+      "name": "VO - Confirm Approved 2",
+      "webhookId": "vo-confirm-approved-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=❌ تم إلغاء ال Voice Over نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56144,
+        17712
+      ],
+      "id": "bbe30743-0b43-491f-9ede-02f91b2a733c",
+      "name": "VO - Confirm Cancelled 2",
+      "webhookId": "vo-confirm-cancelled-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن خطوة Voice Over اكتملت بنجاح.\nأعد إرسال: MT OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56544,
+        18160
+      ],
+      "id": "d04e5a2e-c0f4-4857-bced-d2c51b1565f8",
+      "name": "MT - No Folder Warning 2",
+      "webhookId": "mt-no-folder-warn-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=✅ Montage تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('MT - Lookup MT Pending').item.json.Name }}\n\n🎬 رابط مجلد المونتاج:\nhttps://drive.google.com/drive/folders/{{ $('MT - Extract Folder').item.json.folderId }}\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58336,
+        18256
+      ],
+      "id": "9f7f5a91-ef07-4fe1-b33a-c7f457b089a1",
+      "name": "MT - Confirm Approved 2",
+      "webhookId": "mt-confirm-approved-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=❌ تم إلغاء المونتاج نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56128,
+        18256
+      ],
+      "id": "d5b9c120-c594-488e-b791-310d1a700bad",
+      "name": "MT - Confirm Cancelled 2",
+      "webhookId": "mt-confirm-cancelled-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=🎤 Voice Over جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ VO OUI - موافق\n❌ VO NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57952,
+        17456
+      ],
+      "id": "cfe5e7fa-53aa-4665-86e8-76a30a0f676c",
+      "name": "VO - Request Owner Approval 2",
+      "webhookId": "vo-req-owner-approval-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=🎬 Montage جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ MT OUI - موافق\n❌ MT NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57952,
+        17952
+      ],
+      "id": "be8106ac-09db-4a00-a6b1-3e13bc5f02a1",
+      "name": "MT - Request Owner Approval 2",
+      "webhookId": "mt-req-owner-approval-admin2-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=⚠️ تنبيه: مجلد Voice Over فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Voice Over ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58048,
+        17760
+      ],
+      "id": "b5bb9170-a88a-429c-abe7-5470e03385af",
+      "name": "VO - Alert Owner No File 2",
+      "webhookId": "a9ff9f9a-1755-46f3-9edd-7a2d91c2dc70",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213657367547",
+        "textBody": "=⚠️ تنبيه: مجلد Montage فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Montage ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57888,
+        18368
+      ],
+      "id": "97d51f63-aa8b-4400-a459-37ef16a4f620",
+      "name": "MT - Alert Owner No File 2",
+      "webhookId": "7ad63e3c-ccb1-4a0a-8223-ce250fb85235",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=📋 Nouveau Ticket: {{ $('Generate Ticket ID').item.json.ticket_id }}\n\n📦 معلومات المنتج:\n- اسم المنتج: {{ $('Generate Ticket ID').item.json.Name }}\n- الرابط: {{ $('Generate Ticket ID').item.json[\"Lien de site\"] }}\n- الصفحة: {{ $('Generate Ticket ID').item.json[\"Lien De Page\"] }}\n- السعر: {{ $('Generate Ticket ID').item.json[\"prix de ventes\"] }}\n- الدولة: {{ $('Generate Ticket ID').item.json.Pays }}\n\n📊 Google Sheet:\nhttps://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit\n\nConfirmer?\n✅ OUI / OK\n❌ NON / ANNULER",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56096,
+        16544
+      ],
+      "id": "9606217c-b2b8-41e1-9892-dc2154a37244",
+      "name": "Send WhatsApp Text 3",
+      "webhookId": "send-wa-text-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن الخطوة 1 اكتملت بنجاح.\nأعد إرسال: VO OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        57056,
+        17792
+      ],
+      "id": "2115842f-65d5-448a-b059-8c12f9d4404b",
+      "name": "VO - No Folder Warning 3",
+      "webhookId": "vo-no-folder-warn-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=✅ Voice Over تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('VO - Extract File').item.json.Name }}\n\n🎤 رابط مجلد التسجيل الصوتي:\nhttps://drive.google.com/drive/folders/{{ $('VO - Extract File').item.json.folderId }}\n\nvoice_over_approved = true\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58320,
+        17232
+      ],
+      "id": "d30fecd8-2281-481c-b714-4d67d2de233f",
+      "name": "VO - Confirm Approved 3",
+      "webhookId": "vo-confirm-approved-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=❌ تم إلغاء ال Voice Over نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56624,
+        17680
+      ],
+      "id": "be1bcb3e-49b9-4670-862a-2adcd11f91c9",
+      "name": "VO - Confirm Cancelled 3",
+      "webhookId": "vo-confirm-cancelled-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=⚠️ المجلد غير موجود!\n\nالمجلد: {{ $json.folderName }}\nتأكد من أن خطوة Voice Over اكتملت بنجاح.\nأعد إرسال: MT OUI",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56736,
+        18160
+      ],
+      "id": "50b1ea17-f0a4-44c7-96f6-ab2d41d979f4",
+      "name": "MT - No Folder Warning 3",
+      "webhookId": "mt-no-folder-warn-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=✅ Montage تم بنجاح!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $('MT - Lookup MT Pending').item.json.Name }}\n\n🎬 رابط مجلد المونتاج:\nhttps://drive.google.com/drive/folders/{{ $('MT - Extract Folder').item.json.folderId }}\n\n🚀 جاهز للمرحلة الجاية!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58560,
+        18256
+      ],
+      "id": "5b3e8e55-cbc8-4db3-bbdd-b1ba92828dba",
+      "name": "MT - Confirm Approved 3",
+      "webhookId": "mt-confirm-approved-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=❌ تم إلغاء المونتاج نهائياً\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\nتم نقل المنتج إلى ورقة ARCHIVE.\n📁 الحالة: ARCHIVE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56336,
+        18368
+      ],
+      "id": "ed4e7867-6c0f-4fe4-90d6-b09132ab7049",
+      "name": "MT - Confirm Cancelled 3",
+      "webhookId": "mt-confirm-cancelled-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=🎤 Voice Over جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ VO OUI - موافق\n❌ VO NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58144,
+        17456
+      ],
+      "id": "10ab9a1f-401a-4ab9-a8e2-4ff6134cbfe7",
+      "name": "VO - Request Owner Approval 3",
+      "webhookId": "vo-req-owner-approval-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=🎬 Montage جاهز للمراجعة!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n🔗 رابط المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nرد 👇\n✅ MT OUI - موافق\n❌ MT NON - رفض",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58144,
+        17952
+      ],
+      "id": "b7770c31-1cbc-445a-afc6-fe5ac6183729",
+      "name": "MT - Request Owner Approval 3",
+      "webhookId": "mt-req-owner-approval-admin3-wh",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=⚠️ تنبيه: مجلد Voice Over فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Voice Over ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58272,
+        17808
+      ],
+      "id": "e87ba559-2391-4d29-b941-7283ddec612b",
+      "name": "VO - Alert Owner No File 3",
+      "webhookId": "0cae991d-7206-48d9-ada0-6d20c896d9b9",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "213671406756",
+        "textBody": "=⚠️ تنبيه: مجلد Montage فارغ!\n\nTicket: {{ $json.ticket_id }}\nProduct: {{ $json.Name }}\n\n📂 المجلد:\nhttps://drive.google.com/drive/folders/{{ $json.folderId }}\n\nشخص الـ Montage ما حط والو حتى دا.\nتقدر تنبهه مباشرة.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        58096,
+        18368
+      ],
+      "id": "1c6c54a0-d6f8-4e6e-b0bc-dd070e9cc2fd",
+      "name": "MT - Alert Owner No File 3",
+      "webhookId": "fd273209-be83-49c7-9a96-6eb98127052a",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-already-reviewed",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "already_reviewed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "cond-no-pending",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "no_pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        55232,
+        17104
+      ],
+      "id": "9125614b-cba4-4406-8bcd-30e3795f9508",
+      "name": "Is Special Action?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst staticData = $getWorkflowStaticData('global');\nconst action = data.action;\nconst senderPhone = data.senderPhone || '';\nconst lastProcessedAction = staticData.lastProcessedAction || data.lastProcessedAction || '';\nconst lastProcessedProductName = staticData.lastProcessedProductName || data.lastProcessedProductName || 'منتج سابق';\nconst hasNextProduct = data.hasNextProduct === true;\nconst nextProduct = data.nextProduct || null;\n\nif (!senderPhone) return [];\n\n// Update lastPresentedTicketId so future votes from this admin target the next product\nif (hasNextProduct && nextProduct && nextProduct.ticket_id) {\n  staticData.lastPresentedTicketId = nextProduct.ticket_id;\n}\n\nconst actionText = lastProcessedAction === 'approved' ? 'تم قبوله ✅'\n  : lastProcessedAction === 'rejected' ? 'تم رفضه ❌'\n  : 'تمت مراجعته';\n\nlet message = '';\nif (action === 'no_pending') {\n  if (lastProcessedProductName && lastProcessedProductName !== 'منتج سابق') {\n    message = `⚡ المنتج \"${lastProcessedProductName}\" ${actionText} من طرف أدمين آخر.\\n\\n📭 فضيتو المنتجات! لا يوجد منتج آخر للمراجعة في الوقت الحالي.`;\n  } else {\n    message = `📭 فضيتو المنتجات! لا يوجد منتج للمراجعة في الوقت الحالي.`;\n  }\n} else if (action === 'already_reviewed') {\n  message = `⚡ المنتج \"${lastProcessedProductName}\" ${actionText} من طرف أدمين آخر.\\n\\nيمكنك الانتقال لمراجعة المنتج الموالي:`;\n  if (hasNextProduct && nextProduct) {\n    message += `\\n\\n📦 المنتج الموالي:\\n- الاسم: ${nextProduct.Name || 'غير معروف'}\\n- الرابط: ${nextProduct['Lien de site'] || ''}\\n- الصفحة: ${nextProduct['Lien De Page'] || ''}\\n- السعر: ${nextProduct['prix de ventes'] || ''}\\n- الدولة: ${nextProduct.Pays || ''}\\n\\nConfirmer?\\n✅ OUI / OK\\n❌ NON / ANNULER`;\n  } else {\n    message += `\\n\\n📭 لا يوجد منتج موالي للمراجعة.`;\n  }\n}\n\nreturn [{ json: { message, senderPhone } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55424,
+        17216
+      ],
+      "id": "f73cbe9a-b9b0-4979-8b36-907733466db2",
+      "name": "Prepare Late Reply Message"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "={{ $json.senderPhone }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        55616,
+        17216
+      ],
+      "id": "ad24e1fb-dde1-4824-b0ce-712aac3f591d",
+      "name": "Send Late Reply to Admin",
+      "webhookId": "18847290-881d-426e-b594-14645cad6e71",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const matchData = $('Match and Parse Reply').item.json;\nconst senderPhone = matchData.senderPhone || '';\nconst productName = matchData.Name || 'Unknown';\nconst ticket_id = matchData.ticket_id || '';\n\nconst staticData = $getWorkflowStaticData('global');\nstaticData.lastProcessedTicketId = ticket_id;\nstaticData.lastProcessedAction = 'rejected';\nstaticData.lastProcessedProductName = productName;\n\nconst admins = [\n  { phone: '213797841480', name: 'Admin 1' },\n  { phone: '213657367547', name: 'Admin 2' },\n  { phone: '213671406756', name: 'Admin 3' }\n];\nconst excluded = ['213792102843'];\n\nconst rejector = admins.find(a => senderPhone.endsWith(a.phone)) || { name: senderPhone };\nconst others = admins.filter(a => !senderPhone.endsWith(a.phone) && !excluded.some(ex => a.phone.endsWith(ex)));\n\nconst nextRows = $input.all();\nconst nextProduct = (nextRows.length > 0 && nextRows[0].json && nextRows[0].json.Name)\n  ? nextRows[0].json : null;\n\n// Track which product was just presented so late-voter detection works on subsequent votes\nstaticData.lastPresentedTicketId = nextProduct ? (nextProduct.ticket_id || null) : null;\n\nlet messageText;\nlet recipients;\n\nif (nextProduct) {\n  recipients = others;\n  messageText = [\n    '❌ المنتج \"' + productName + '\" تم رفضه من طرف: ' + rejector.name,\n    '',\n    'يمكنك الآن مراجعة المنتج التالي 👇',\n    '',\n    '📦 المنتج: ' + (nextProduct.Name || ''),\n    '🔗 الرابط: ' + (nextProduct['Lien de site'] || ''),\n    '📔 الصفحة: ' + (nextProduct['Lien De Page'] || ''),\n    '💰 السعر: ' + (nextProduct['prix de ventes'] || ''),\n    '🌍 الدولة: ' + (nextProduct.Pays || ''),\n    '',\n    'Confirmer?',\n    '✅ OUI / OK',\n    '❌ NON / ANNULER'\n  ].join('\\n');\n} else {\n  // No more products — notify ALL admins including the voter\n  recipients = admins.filter(a => !excluded.some(ex => a.phone.endsWith(ex)));\n  messageText = [\n    '❌ المنتج \"' + productName + '\" تم رفضه من طرف: ' + rejector.name,\n    '',\n    '📭 تمت مراجعة جميع المنتجات! لا يوجد منتج آخر للمراجعة في الوقت الحالي.'\n  ].join('\\n');\n}\n\nif (recipients.length === 0) return [];\n\nreturn recipients.map(a => ({\n  json: {\n    notifyPhone: a.phone,\n    messageText: messageText\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        55824,
+        17168
+      ],
+      "id": "3f61d7c9-81bf-4ac7-9629-2846f6ddd978",
+      "name": "Prepare Rejection Notifications"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "971592002706173",
+        "recipientPhoneNumber": "={{ $json.notifyPhone }}",
+        "textBody": "={{ $json.messageText }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        56064,
+        17168
+      ],
+      "id": "2f31c607-fc1a-46c3-8737-39b26b4de5b5",
+      "name": "Notify Other Admins - Rejected",
+      "webhookId": "675c240a-8429-4c32-ab0f-3ac623914d41",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "2EY4DGlhRmalnFgH",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "EN_ATTENTE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        56048,
+        17056
+      ],
+      "id": "lookup-next-approved-001",
+      "name": "Lookup Next - Approved",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg",
+          "mode": "list",
+          "cachedResultName": "Product research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P4CHgx8fq_oxDJxJtygKQd2VwofeETrDbhU8DPETJCg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "EN_ATTENTE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        56048,
+        17168
+      ],
+      "id": "lookup-next-rejected-001",
+      "name": "Lookup Next - Rejected",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNwhRj30ddjAQl34",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Approved": {
+      "main": [
+        [
+          {
+            "node": "Generate Ticket ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Ticket ID": {
+      "main": [
+        [
+          {
+            "node": "Set Initial Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Initial Status": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Message": {
+      "main": [
+        [
+          {
+            "node": "Is VO Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is VO Message?": {
+      "main": [
+        [
+          {
+            "node": "VO - Lookup VO Pending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is MT Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is MT Message?": {
+      "main": [
+        [
+          {
+            "node": "MT - Lookup MT Pending",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lookup Pending Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Pending Rows": {
+      "main": [
+        [
+          {
+            "node": "Match and Parse Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match and Parse Reply": {
+      "main": [
+        [
+          {
+            "node": "Is Special Action?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Special Action?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Late Reply Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route By Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Late Reply Message": {
+      "main": [
+        [
+          {
+            "node": "Send Late Reply to Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By Action": {
+      "main": [
+        [
+          {
+            "node": "Update Status to A_FAIRE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Status to ARCHIVE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status to A_FAIRE": {
+      "main": [
+        [
+          {
+            "node": "Prepare Folder Name",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lookup Next - Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Next - Approved": {
+      "main": [
+        [
+          {
+            "node": "Prepare Admin Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Admin Notifications": {
+      "main": [
+        [
+          {
+            "node": "Notify Other Admins - Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Folder Name": {
+      "main": [
+        [
+          {
+            "node": "Create Google Drive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Google Drive Folder": {
+      "main": [
+        [
+          {
+            "node": "Share Drive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Drive Folder": {
+      "main": [
+        [
+          {
+            "node": "Save Folder ID to Sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VO - Notify Voice Over",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Lookup VO Pending": {
+      "main": [
+        [
+          {
+            "node": "VO - Parse VO Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Parse VO Reply": {
+      "main": [
+        [
+          {
+            "node": "VO - Approve or Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Approve or Reject": {
+      "main": [
+        [
+          {
+            "node": "VO - Prepare Folder Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - Reject or Cancel?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Reject or Cancel?": {
+      "main": [
+        [
+          {
+            "node": "VO - Update Archive Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - Set Rejected False",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Set Rejected False": {
+      "main": [
+        [
+          {
+            "node": "VO - Ask Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Prepare Folder Name": {
+      "main": [
+        [
+          {
+            "node": "VO - Find Create Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Find Create Folder": {
+      "main": [
+        [
+          {
+            "node": "VO - Extract Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Extract Folder": {
+      "main": [
+        [
+          {
+            "node": "VO - Folder Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Folder Found?": {
+      "main": [
+        [
+          {
+            "node": "VO - Wait Before List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - No Folder Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Wait Before List": {
+      "main": [
+        [
+          {
+            "node": "VO - List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - List Files in Folder": {
+      "main": [
+        [
+          {
+            "node": "VO - Extract File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Extract File": {
+      "main": [
+        [
+          {
+            "node": "VO - Should Retry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Should Retry?": {
+      "main": [
+        [
+          {
+            "node": "VO - Retry Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - File Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Retry Wait": {
+      "main": [
+        [
+          {
+            "node": "VO - List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - File Exists?": {
+      "main": [
+        [
+          {
+            "node": "VO - Check Sender",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - No File Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - No File Warning": {
+      "main": [
+        [
+          {
+            "node": "VO - Alert Owner No File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Append Approved Row": {
+      "main": [
+        [
+          {
+            "node": "VO - Mark Original Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Mark Original Done": {
+      "main": [
+        [
+          {
+            "node": "VO - Confirm Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Confirm Approved": {
+      "main": [
+        [
+          {
+            "node": "MT - Notify Montage",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VO - Confirm Approved 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Lookup MT Pending": {
+      "main": [
+        [
+          {
+            "node": "MT - Parse MT Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Parse MT Reply": {
+      "main": [
+        [
+          {
+            "node": "MT - Approve or Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Approve or Reject": {
+      "main": [
+        [
+          {
+            "node": "MT - Prepare Folder Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - Reject or Cancel?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Reject or Cancel?": {
+      "main": [
+        [
+          {
+            "node": "MT - Update Archive Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - Set Rejected False",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Set Rejected False": {
+      "main": [
+        [
+          {
+            "node": "MT - Ask Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Prepare Folder Name": {
+      "main": [
+        [
+          {
+            "node": "MT - Find Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Find Folder": {
+      "main": [
+        [
+          {
+            "node": "MT - Extract Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Extract Folder": {
+      "main": [
+        [
+          {
+            "node": "MT - Folder Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Folder Found?": {
+      "main": [
+        [
+          {
+            "node": "MT - Wait Before List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - No Folder Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Wait Before List": {
+      "main": [
+        [
+          {
+            "node": "MT - List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - List Files in Folder": {
+      "main": [
+        [
+          {
+            "node": "MT - Extract File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Extract File": {
+      "main": [
+        [
+          {
+            "node": "MT - Should Retry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Should Retry?": {
+      "main": [
+        [
+          {
+            "node": "MT - Retry Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - File Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Retry Wait": {
+      "main": [
+        [
+          {
+            "node": "MT - List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - File Exists?": {
+      "main": [
+        [
+          {
+            "node": "MT - Check Sender",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - No File Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - No File Warning": {
+      "main": [
+        [
+          {
+            "node": "MT - Alert Owner No File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Append Approved Row": {
+      "main": [
+        [
+          {
+            "node": "MT - Mark Original Done",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MT - Confirm Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Update Archive Status": {
+      "main": [
+        [
+          {
+            "node": "MT - Confirm Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Update Archive Status": {
+      "main": [
+        [
+          {
+            "node": "VO - Confirm Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Check Sender": {
+      "main": [
+        [
+          {
+            "node": "VO - Request Owner Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VO - Append Approved Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Check Sender": {
+      "main": [
+        [
+          {
+            "node": "MT - Request Owner Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MT - Append Approved Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Text": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Text 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - No Folder Warning": {
+      "main": [
+        [
+          {
+            "node": "VO - No Folder Warning 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Confirm Cancelled": {
+      "main": [
+        [
+          {
+            "node": "VO - Confirm Cancelled 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - No Folder Warning": {
+      "main": [
+        [
+          {
+            "node": "MT - No Folder Warning 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Confirm Approved": {
+      "main": [
+        [
+          {
+            "node": "MT - Confirm Approved 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Confirm Cancelled": {
+      "main": [
+        [
+          {
+            "node": "MT - Confirm Cancelled 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Request Owner Approval": {
+      "main": [
+        [
+          {
+            "node": "VO - Request Owner Approval 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Request Owner Approval": {
+      "main": [
+        [
+          {
+            "node": "MT - Request Owner Approval 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Alert Owner No File": {
+      "main": [
+        [
+          {
+            "node": "VO - Alert Owner No File 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Alert Owner No File": {
+      "main": [
+        [
+          {
+            "node": "MT - Alert Owner No File 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Text 2": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Text 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - No Folder Warning 2": {
+      "main": [
+        [
+          {
+            "node": "VO - No Folder Warning 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Confirm Approved 2": {
+      "main": [
+        [
+          {
+            "node": "VO - Confirm Approved 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Confirm Cancelled 2": {
+      "main": [
+        [
+          {
+            "node": "VO - Confirm Cancelled 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - No Folder Warning 2": {
+      "main": [
+        [
+          {
+            "node": "MT - No Folder Warning 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Confirm Approved 2": {
+      "main": [
+        [
+          {
+            "node": "MT - Confirm Approved 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Confirm Cancelled 2": {
+      "main": [
+        [
+          {
+            "node": "MT - Confirm Cancelled 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Request Owner Approval 2": {
+      "main": [
+        [
+          {
+            "node": "VO - Request Owner Approval 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Request Owner Approval 2": {
+      "main": [
+        [
+          {
+            "node": "MT - Request Owner Approval 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VO - Alert Owner No File 2": {
+      "main": [
+        [
+          {
+            "node": "VO - Alert Owner No File 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MT - Alert Owner No File 2": {
+      "main": [
+        [
+          {
+            "node": "MT - Alert Owner No File 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status to ARCHIVE": {
+      "main": [
+        [
+          {
+            "node": "Lookup Next - Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Next - Rejected": {
+      "main": [
+        [
+          {
+            "node": "Prepare Rejection Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Rejection Notifications": {
+      "main": [
+        [
+          {
+            "node": "Notify Other Admins - Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "9ad35b3e-d165-4c99-aa03-9d31e591d484",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ddd73de2b863c6f3f3b60709355c0c7c8f7a07c26fd6a3d82fcf822f8cac9ab6"
+  },
+  "id": "5MGucgx8V5MRHPw1",
+  "tags": []
+}
